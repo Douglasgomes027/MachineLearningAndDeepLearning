@@ -7,9 +7,11 @@ import os, json
 ##
 app = Flask(__name__)
 
+##REALIZA A PREDICAO E RESPONDE COM AS CATEGORIAS
 @app.route("/predictions", methods=['POST'])
 def test():
-    ##
+    
+    ##IMPORTA O MODELO E O VOCABULARIO
     filename = 'model_v1.pkl'
 
     ##
@@ -23,14 +25,10 @@ def test():
     with open(vocab_filename, 'rb') as f2:
         loaded_vocabulary = joblib.load(f2)
 
-    ##
-    #print(loaded_model.classes_)
-
-    ##
+    ##CARREGA O VOCABULARIO NO NOSSO VECTORIZER
     vectorizer_train = CountVectorizer(vocabulary=loaded_vocabulary)
 
-    ##
-    #teste_predict=['EPSON MAGENTO','LILLO BICO','BOV AMERICANA KG','KING 100ML JASMIM']
+    ##PEGA OS DADOS DA REQUISICAO E FAZ A PREDICAO
     req_data = request.get_json()
     teste_predict = req_data['data']
     teste_predict_vect = vectorizer_train.transform(teste_predict) 
@@ -40,12 +38,7 @@ def test():
     
     return output_json
 
-##
-@app.route("/")
-def hello_world():
-    return "Hello World! <strong>I am learning Flask</strong>", 200
-
-##
+##CRIA UM JSON COM A DESCRICAO ENTRADA E O GENERO ESPERADO
 def json_concatenation(input_json, json_key, output_list):
     teste_predict = input_json[json_key]
     output_dict= dict()
@@ -60,5 +53,5 @@ def json_concatenation(input_json, json_key, output_list):
     return output_json
     
 
-##
+##INICIANDO SERVIDOR
 app.run()
