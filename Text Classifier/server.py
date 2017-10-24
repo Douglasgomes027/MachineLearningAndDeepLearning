@@ -31,17 +31,34 @@ def test():
 
     ##
     #teste_predict=['EPSON MAGENTO','LILLO BICO','BOV AMERICANA KG','KING 100ML JASMIM']
-    request_data = request.get_json()
-    teste_predict = request_data['data']
+    req_data = request.get_json()
+    teste_predict = req_data['data']
     teste_predict_vect = vectorizer_train.transform(teste_predict) 
     predictions = loaded_model.predict(teste_predict_vect)
  
-    return jsonify(predictions.tolist())
+    output_json = json_concatenation(req_data,'data', predictions.tolist())
+    
+    return output_json
 
 ##
 @app.route("/")
 def hello_world():
     return "Hello World! <strong>I am learning Flask</strong>", 200
+
+##
+def json_concatenation(input_json, json_key, output_list):
+    teste_predict = input_json[json_key]
+    output_dict= dict()
+    for i in range(len(output_list)):
+        data = {
+            teste_predict[i] : output_list[i]
+        }
+        output_dict.update(data)
+        
+    #output_json = json.dumps(output_dict)
+    output_json = jsonify(output_dict)
+    return output_json
+    
 
 ##
 app.run()
