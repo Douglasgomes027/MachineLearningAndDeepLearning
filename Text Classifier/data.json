@@ -1,8 +1,6 @@
 {
-    "categorias" : {
-        "EPSON MAGENTO",
-        "LILLO BICO",
-        "BOV AMERICANA KG",
-        "KING 100ML JASMIM"
-    }
+    "0" : "EPSON MAGENTO",
+    "1" : "LILLO BICO",
+    "2" : "BOV AMERICANA KG",
+    "3" : "KING 100ML JASMIM"
 }
