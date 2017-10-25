@@ -32,7 +32,12 @@ def test():
     ##
     #teste_predict=['EPSON MAGENTO','LILLO BICO','BOV AMERICANA KG','KING 100ML JASMIM']
     req_data = request.get_json()
-    teste_predict = req_data['data']
+    teste_predict = []
+    req_array = req_data['data']
+    for i in range(len(req_array)):
+        desc = req_array[i]['descricao']
+        teste_predict.append(desc)
+       
     teste_predict_vect = vectorizer_train.transform(teste_predict) 
     predictions = loaded_model.predict(teste_predict_vect)
  
@@ -51,14 +56,15 @@ def json_concatenation(input_json, json_key, output_list):
     output_dict= []
     for i in range(len(output_list)):
         data = {
-            "descricao" : teste_predict[i],
+            "descricao" : teste_predict[i]['descricao'],
             "genero" : output_list[i]
         }
         output_dict.append(data)
         
     #output_json = json.dumps(output_dict)
-    output_json = jsonify(output_dict)
-    return output_json
+    output_json = {"data" : output_dict}
+    #output_json = jsonify(output_dict)
+    return jsonify(output_json)
     
 
 ##INICIANDO SERVIDOR
@@ -69,12 +75,11 @@ app.run()
 	"data" : [
 		{
 			"descricao": "asdasds",
-			"genero": "asdasd"
 		},
 		{
 			"descricao": "asdasds",
-			"genero": "asdasd"
 		}
 		]
 }
 '''
+
