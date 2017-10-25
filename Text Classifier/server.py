@@ -7,11 +7,9 @@ import os, json
 ##
 app = Flask(__name__)
 
-##REALIZA A PREDICAO E RESPONDE COM AS CATEGORIAS
 @app.route("/predictions", methods=['POST'])
 def test():
-    
-    ##IMPORTA O MODELO E O VOCABULARIO
+    ##
     filename = 'model_v1.pkl'
 
     ##
@@ -25,10 +23,14 @@ def test():
     with open(vocab_filename, 'rb') as f2:
         loaded_vocabulary = joblib.load(f2)
 
-    ##CARREGA O VOCABULARIO NO NOSSO VECTORIZER
+    ##
+    #print(loaded_model.classes_)
+
+    ##
     vectorizer_train = CountVectorizer(vocabulary=loaded_vocabulary)
 
-    ##PEGA OS DADOS DA REQUISICAO E FAZ A PREDICAO
+    ##
+    #teste_predict=['EPSON MAGENTO','LILLO BICO','BOV AMERICANA KG','KING 100ML JASMIM']
     req_data = request.get_json()
     teste_predict = req_data['data']
     teste_predict_vect = vectorizer_train.transform(teste_predict) 
@@ -38,15 +40,21 @@ def test():
     
     return output_json
 
-##CRIA UM JSON COM A DESCRICAO ENTRADA E O GENERO ESPERADO
+##
+@app.route("/")
+def hello_world():
+    return "Hello World! <strong>I am learning Flask</strong>", 200
+
+##CRIA UM JSON PARA A SAÍDA
 def json_concatenation(input_json, json_key, output_list):
     teste_predict = input_json[json_key]
-    output_dict= dict()
+    output_dict= []
     for i in range(len(output_list)):
         data = {
-            teste_predict[i] : output_list[i]
+            "descricao" : teste_predict[i],
+            "genero" : output_list[i]
         }
-        output_dict.update(data)
+        output_dict.append(data)
         
     #output_json = json.dumps(output_dict)
     output_json = jsonify(output_dict)
@@ -55,3 +63,18 @@ def json_concatenation(input_json, json_key, output_list):
 
 ##INICIANDO SERVIDOR
 app.run()
+
+'''
+{
+	"data" : [
+		{
+			"descricao": "asdasds",
+			"genero": "asdasd"
+		},
+		{
+			"descricao": "asdasds",
+			"genero": "asdasd"
+		}
+		]
+}
+'''
