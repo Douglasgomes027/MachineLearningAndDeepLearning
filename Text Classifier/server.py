@@ -56,8 +56,9 @@ def json_concatenation(input_json, json_key, output_list):
     output_dict= []
     for i in range(len(output_list)):
         data = {
-            "descricao" : teste_predict[i]['descricao'],
-            "genero" : output_list[i]
+            "id": teste_predict[i]['id'],
+            "descricao": teste_predict[i]['descricao'],
+            "genero": output_list[i]
         }
         output_dict.append(data)
         
@@ -82,4 +83,3 @@ app.run()
 		]
 }
 '''
-

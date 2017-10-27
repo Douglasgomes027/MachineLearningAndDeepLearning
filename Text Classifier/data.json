@@ -1,7 +1,12 @@
 {
-	"data" : [
-		"Skol lata",
-		"Tampico Laranja",
-		"Escova dente"
+	"data" : [{
+		"descricao":"Skol lata"
+	},
+	{
+		"descricao":"Tampico Laranja"
+	},
+	{
+		"descricao":"Escova dente"
+	}
 	]
 }
