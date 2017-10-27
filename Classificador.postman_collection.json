@@ -1,0 +1,42 @@
+{
+	"info": {
+		"name": "Classificador",
+		"_postman_id": "b4880598-55b9-4fe3-66d9-68ecc7e6c2a3",
+		"description": "",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Classificar lista de produtos",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"data\" : [\n\t\t{ \n\t\t\t\"id\": 5,\n\t\t\t\"descricao\":\t\"EPSON MAGENTO\" \n\t\t},\n\t\t{ \n\t\t\t\"id\": 42,\n\t\t\t\"descricao\":\t\"BOV AMERICANA KG\" \n\t\t\t\n\t\t},\n\t\t{ \n\t\t\t\"id\": 32,\n\t\t\t\"descricao\":\t\"KING 100ML JASMIM\"\n\t\t}\n\t]\n}"
+				},
+				"url": {
+					"raw": "http://127.0.0.1:5000/predictions",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"predictions"
+					]
+				},
+				"description": ""
+			},
+			"response": []
+		}
+	]
+}
