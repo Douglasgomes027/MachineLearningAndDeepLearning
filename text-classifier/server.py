@@ -7,22 +7,23 @@ import os, json
 ##
 app = Flask(__name__)
 
+##
+filename = 'Classificador-v2\model_v2.pkl'
+
+##
+with open(filename ,'rb') as f:
+    loaded_model = joblib.load(f)
+
+##
+vocab_filename = 'Classificador-v2\model_v2_vocabulary.pkl'
+
+##
+with open(vocab_filename, 'rb') as f2:
+    loaded_vocabulary = joblib.load(f2)
+
+
 @app.route("/predictions", methods=['POST'])
 def test():
-    ##
-    filename = 'Classificador-v2\model_v2.pkl'
-
-    ##
-    with open(filename ,'rb') as f:
-        loaded_model = joblib.load(f)
-
-    ##
-    vocab_filename = 'Classificador-v2\model_v2_vocabulary.pkl'
-
-    ##
-    with open(vocab_filename, 'rb') as f2:
-        loaded_vocabulary = joblib.load(f2)
-
     ##
     #print(loaded_model.classes_)
 
