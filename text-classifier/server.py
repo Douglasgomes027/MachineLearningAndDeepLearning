@@ -65,7 +65,7 @@ def predict_item():
  
     pred_prob_list = loaded_model.predict_proba(teste_predict_vect).tolist()
  
-    prob_list = get_greatest_probabilities(pred_prob_list)
+    prob_list = get_top_N_greatest_probabilities(pred_prob_list, 5)
  
     output_json = format_json_probs(req_data,'data', predictions.tolist(), prob_list)
     
@@ -100,18 +100,9 @@ def format_json_probs(input_json, json_key, predictions_list, pred_prob_list):
             "id": teste_predict[i]['id'],
             "descricao": teste_predict[i]['descricao']
         }
-        for j in range(len(predictions_list[i])):
-            print(pred_prob_list[i])
-            probs = {
-                "top" : {
-                    "genero": predictions_list[i],
-                    "probabilidade": pred_prob_list[i][j]
-                }
-            }
-            print(probs)
-            probs_dict.update(probs)
-            
-        data.update(probs_dict)
+   
+        predicao = list_to_dict(pred_prob_list)
+        data['predicao'] = predicao[i]
         output_dict.append(data)
         
     output_json = {"data" : output_dict}
@@ -129,33 +120,78 @@ def get_top_N_greatest_probabilities(list, N):
     for i in list_copy:
         top_probabilities = []
         for j in range(N):
+            genero = loaded_model.classes_[i.index(max(i))]
+            top_probabilities.append(genero)
             top_probabilities.append(max(i))
             top_element = i.index(max(i))
             del i[top_element]
         max_probabilities.append(top_probabilities)
         
     return max_probabilities
+        
+
+def list_to_dict(list):
+    ndict = []
+    for item in range(len(list)):
+        predicao = dict()
+        for j in range(0, len(list[item]), 2):
+            key = "top" + str(int(j/2)+1)
+            genero = list[item][j]
+            probabilidade = list[item][j+1]
+            item_genero = dict(zip(["genero"],[genero]))
+            item_prob = dict(zip(["probabilidade"],[probabilidade]))
+            top = dict(zip([genero],[probabilidade]))
+            probs = {
+                key: {
+                    "genero": item_genero['genero'],
+                    "probabilidade": item_prob['probabilidade']
+                }
+            }
+            predicao.update(probs)
+        ndict.append(predicao)
+
+    return ndict
 
 ##INICIANDO SERVIDOR
 app.run()
 
-"""
-"data": {
-    "descricao": "X***  DFSF",
-    "id": 5,
-    "probabilidade": {
-        "top1" : {
-            "genero": "SIMILAR",
-            "probabilidade": "1.0"
-        },
-        "top2" : {
-            "genero": "SIMILAR",
-            "probabilidade": "1.0"
-        },
-        "top3" : {
-            "genero": "SIMILAR",
-            "probabilidade": "1.0"
-        }
-    }
-}
-"""
+"""[['ACESSORIO DE INFORMATICA',
+  0.11709413398796074,
+  'HIDROTONICO',
+  0.056429621768032456,
+  'SAPATO',
+  0.05539726192596718,
+  'PROTEINA DE SOJA',
+  0.0483498073510593,
+  'COMBUSTIVEL',
+  0.043349035163405616],
+ ['PRODUTO FARMACEUTICO',
+  0.4884460589118801,
+  'UTENSILIO DE LIMPEZA',
+  0.31743686303662555,
+  'TINTA PARA TECIDO',
+  0.05116081261930232,
+  'UNHAS',
+  0.031660312570506145,
+  'MATERIAL PARA CONSTRUCAO',
+  0.010392791694855807],
+ ['CARNE BOVINA',
+  0.9925347988520936,
+  'VEICULO TERRESTRE',
+  0.0030658419740030958,
+  'PES',
+  0.0017519534943057915,
+  'FORMAS DE TABACO',
+  0.0008539398100165392,
+  'MATERIAL PARA AGROPECUARIA',
+  0.0005745904968630154],
+ ['PRODUTO DE LIMPEZA',
+  0.9098893093422855,
+  'COSMETICOS',
+  0.04238941656111119,
+  'SAPATO',
+  0.012081351852380958,
+  'PROTEINA DE SOJA',
+  0.007901742035074615,
+  'PRODUTO DE LIMPEZA',
+  0.007791417225680461]] """
