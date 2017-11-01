@@ -138,24 +138,3 @@ def get_top_N_greatest_probabilities(list, N):
 
 ##INICIANDO SERVIDOR
 app.run()
-
-"""
-"data": {
-    "descricao": "X***  DFSF",
-    "id": 5,
-    "probabilidade": {
-        "top1" : {
-            "genero": "SIMILAR",
-            "probabilidade": "1.0"
-        },
-        "top2" : {
-            "genero": "SIMILAR",
-            "probabilidade": "1.0"
-        },
-        "top3" : {
-            "genero": "SIMILAR",
-            "probabilidade": "1.0"
-        }
-    }
-}
-"""
