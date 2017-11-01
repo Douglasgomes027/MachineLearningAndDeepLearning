@@ -44,7 +44,7 @@ def predictions():
  
     prob_list = get_greatest_probabilities(pred_prob_list)
  
-    output_json = json_concatenation(req_data,'data', predictions.tolist(), prob_list)
+    output_json = json_concatenation(req_data,'data', predictions.tolist(), prob_list, config())
     
     return output_json
 
@@ -74,22 +74,39 @@ def predict_item():
 
 
 ##CRIA UM JSON PARA A SAÍDA
-def json_concatenation(input_json, json_key, predictions_list, prob_list):
+def json_concatenation(input_json, json_key, predictions_list, prob_list, configuracao):
+    print (bool(configuracao['ativado']))
     teste_predict = input_json[json_key]
     output_dict= []
-    for i in range(len(predictions_list)):
-        data = {
-            "id": teste_predict[i]['id'],
-            "descricao": teste_predict[i]['descricao'],
-            "genero": predictions_list[i],
-            "probabilidade": prob_list[i]
-        }
-        output_dict.append(data)
-        
-    #output_json = json.dumps(output_dict)
-    output_json = {"data" : output_dict}
-    #output_json = jsonify(output_dict)
-    return jsonify(output_json)
+    if (bool(configuracao['ativado'])):
+        for i in range(len(predictions_list)):
+            if (prob_list[i]>float(configuracao['porcentagem'])):
+                data = {
+                    "id": teste_predict[i]['id'],
+                    "descricao": teste_predict[i]['descricao'],
+                    "genero": predictions_list[i],
+                    "probabilidade": prob_list[i]
+                }
+                output_dict.append(data)
+            
+        #output_json = json.dumps(output_dict)
+        output_json = {"data" : output_dict}
+        #output_json = jsonify(output_dict)
+        return jsonify(output_json)
+    else:
+        for i in range(len(predictions_list)):
+            data = {
+                "id": teste_predict[i]['id'],
+                "descricao": teste_predict[i]['descricao'],
+                "genero": predictions_list[i],
+                "probabilidade": prob_list[i]
+            }
+            output_dict.append(data)
+            
+        #output_json = json.dumps(output_dict)
+        output_json = {"data" : output_dict}
+        #output_json = jsonify(output_dict)
+        return jsonify(output_json) 
     
 def format_json_probs(input_json, json_key, predictions_list, pred_prob_list):
     teste_predict =input_json[json_key]
@@ -152,46 +169,19 @@ def list_to_dict(list):
 
     return ndict
 
+
+def config():
+    arq = open('config.txt', 'r')
+    texto = arq.readlines()
+    parametros={}
+    for linha in texto:
+        linha=linha.replace('\n','')
+        linha=linha.split(' = ')
+        if (linha[1]=='False'):
+            linha[1]=''
+        parametros[linha[0]] = linha[1]
+    return parametros
+
 ##INICIANDO SERVIDOR
 app.run()
 
-"""[['ACESSORIO DE INFORMATICA',
-  0.11709413398796074,
-  'HIDROTONICO',
-  0.056429621768032456,
-  'SAPATO',
-  0.05539726192596718,
-  'PROTEINA DE SOJA',
-  0.0483498073510593,
-  'COMBUSTIVEL',
-  0.043349035163405616],
- ['PRODUTO FARMACEUTICO',
-  0.4884460589118801,
-  'UTENSILIO DE LIMPEZA',
-  0.31743686303662555,
-  'TINTA PARA TECIDO',
-  0.05116081261930232,
-  'UNHAS',
-  0.031660312570506145,
-  'MATERIAL PARA CONSTRUCAO',
-  0.010392791694855807],
- ['CARNE BOVINA',
-  0.9925347988520936,
-  'VEICULO TERRESTRE',
-  0.0030658419740030958,
-  'PES',
-  0.0017519534943057915,
-  'FORMAS DE TABACO',
-  0.0008539398100165392,
-  'MATERIAL PARA AGROPECUARIA',
-  0.0005745904968630154],
- ['PRODUTO DE LIMPEZA',
-  0.9098893093422855,
-  'COSMETICOS',
-  0.04238941656111119,
-  'SAPATO',
-  0.012081351852380958,
-  'PROTEINA DE SOJA',
-  0.007901742035074615,
-  'PRODUTO DE LIMPEZA',
-  0.007791417225680461]] """
