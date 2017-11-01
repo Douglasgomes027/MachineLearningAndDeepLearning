@@ -44,7 +44,7 @@ def predictions():
  
     prob_list = get_greatest_probabilities(pred_prob_list)
  
-    output_json = json_concatenation(req_data,'data', predictions.tolist(), prob_list)
+    output_json = json_concatenation(req_data,'data', predictions.tolist(), prob_list, config())
     
     return output_json
 
@@ -65,7 +65,7 @@ def predict_item():
  
     pred_prob_list = loaded_model.predict_proba(teste_predict_vect).tolist()
  
-    prob_list = get_greatest_probabilities(pred_prob_list)
+    prob_list = get_top_N_greatest_probabilities(pred_prob_list, 5)
  
     output_json = format_json_probs(req_data,'data', predictions.tolist(), prob_list)
     
@@ -74,22 +74,39 @@ def predict_item():
 
 
 ##CRIA UM JSON PARA A SAÍDA
-def json_concatenation(input_json, json_key, predictions_list, prob_list):
+def json_concatenation(input_json, json_key, predictions_list, prob_list, configuracao):
+    print (bool(configuracao['ativado']))
     teste_predict = input_json[json_key]
     output_dict= []
-    for i in range(len(predictions_list)):
-        data = {
-            "id": teste_predict[i]['id'],
-            "descricao": teste_predict[i]['descricao'],
-            "genero": predictions_list[i],
-            "probabilidade": prob_list[i]
-        }
-        output_dict.append(data)
-        
-    #output_json = json.dumps(output_dict)
-    output_json = {"data" : output_dict}
-    #output_json = jsonify(output_dict)
-    return jsonify(output_json)
+    if (bool(configuracao['ativado'])):
+        for i in range(len(predictions_list)):
+            if (prob_list[i]>float(configuracao['porcentagem'])):
+                data = {
+                    "id": teste_predict[i]['id'],
+                    "descricao": teste_predict[i]['descricao'],
+                    "genero": predictions_list[i],
+                    "probabilidade": prob_list[i]
+                }
+                output_dict.append(data)
+            
+        #output_json = json.dumps(output_dict)
+        output_json = {"data" : output_dict}
+        #output_json = jsonify(output_dict)
+        return jsonify(output_json)
+    else:
+        for i in range(len(predictions_list)):
+            data = {
+                "id": teste_predict[i]['id'],
+                "descricao": teste_predict[i]['descricao'],
+                "genero": predictions_list[i],
+                "probabilidade": prob_list[i]
+            }
+            output_dict.append(data)
+            
+        #output_json = json.dumps(output_dict)
+        output_json = {"data" : output_dict}
+        #output_json = jsonify(output_dict)
+        return jsonify(output_json) 
     
 def format_json_probs(input_json, json_key, predictions_list, pred_prob_list):
     teste_predict =input_json[json_key]
@@ -100,18 +117,9 @@ def format_json_probs(input_json, json_key, predictions_list, pred_prob_list):
             "id": teste_predict[i]['id'],
             "descricao": teste_predict[i]['descricao']
         }
-        for j in range(len(predictions_list[i])):
-            print(pred_prob_list[i])
-            probs = {
-                "top" : {
-                    "genero": predictions_list[i],
-                    "probabilidade": pred_prob_list[i][j]
-                }
-            }
-            print(probs)
-            probs_dict.update(probs)
-            
-        data.update(probs_dict)
+   
+        predicao = list_to_dict(pred_prob_list)
+        data['predicao'] = predicao[i]
         output_dict.append(data)
         
     output_json = {"data" : output_dict}
@@ -129,12 +137,51 @@ def get_top_N_greatest_probabilities(list, N):
     for i in list_copy:
         top_probabilities = []
         for j in range(N):
+            genero = loaded_model.classes_[i.index(max(i))]
+            top_probabilities.append(genero)
             top_probabilities.append(max(i))
             top_element = i.index(max(i))
             del i[top_element]
         max_probabilities.append(top_probabilities)
         
     return max_probabilities
+        
+
+def list_to_dict(list):
+    ndict = []
+    for item in range(len(list)):
+        predicao = dict()
+        for j in range(0, len(list[item]), 2):
+            key = "top" + str(int(j/2)+1)
+            genero = list[item][j]
+            probabilidade = list[item][j+1]
+            item_genero = dict(zip(["genero"],[genero]))
+            item_prob = dict(zip(["probabilidade"],[probabilidade]))
+            top = dict(zip([genero],[probabilidade]))
+            probs = {
+                key: {
+                    "genero": item_genero['genero'],
+                    "probabilidade": item_prob['probabilidade']
+                }
+            }
+            predicao.update(probs)
+        ndict.append(predicao)
+
+    return ndict
+
+
+def config():
+    arq = open('config.txt', 'r')
+    texto = arq.readlines()
+    parametros={}
+    for linha in texto:
+        linha=linha.replace('\n','')
+        linha=linha.split(' = ')
+        if (linha[1]=='False'):
+            linha[1]=''
+        parametros[linha[0]] = linha[1]
+    return parametros
 
 ##INICIANDO SERVIDOR
 app.run()
+
