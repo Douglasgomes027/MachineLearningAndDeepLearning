@@ -87,9 +87,9 @@ def predict_classe_genero():
 def json_concatenation(input_json, json_key, predictions_list, prob_list, configuracao):
     teste_predict = input_json[json_key]
     output_dict= []
-    if (bool(configuracao['ativado'])):
+    if (configuracao['ativado']):
         for i in range(len(predictions_list)):
-            if (prob_list[i]>float(configuracao['porcentagem'])):
+            if (prob_list[i]>configuracao['porcentagem']):
                 data = {
                     "id": teste_predict[i]['id'],
                     "descricao": teste_predict[i]['descricao'],
@@ -181,15 +181,7 @@ def list_to_dict(list):
 
 
 def config():
-    arq = open('config.txt', 'r')
-    texto = arq.readlines()
-    parametros={}
-    for linha in texto:
-        linha=linha.replace('\n','')
-        linha=linha.split(' = ')
-        if (linha[1]=='False'):
-            linha[1]=''
-        parametros[linha[0]] = linha[1]
+    parametros = json.loads(open('config/config.json').read())
     return parametros
 
 def predict_class(model, vocab, req_data):
