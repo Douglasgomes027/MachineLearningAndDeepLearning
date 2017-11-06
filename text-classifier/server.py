@@ -7,21 +7,6 @@ import os, json
 ##
 app = Flask(__name__)
 
-##
-filename = 'Classificador-v2\model_v2.pkl'
-
-##
-with open(filename ,'rb') as f:
-    loaded_model = joblib.load(f)
-
-##
-vocab_filename = 'Classificador-v2\model_v2_vocabulary.pkl'
-
-##
-with open(vocab_filename, 'rb') as f2:
-    loaded_vocabulary = joblib.load(f2)
-
-
 @app.route("/predictions", methods=['POST'])
 def predictions():
 
@@ -49,7 +34,6 @@ def predictions():
     return output_json
 
 
-
 @app.route("/predict_item", methods=['POST'])
 def predict_item():
     vectorizer_train = CountVectorizer(vocabulary=loaded_vocabulary)
@@ -72,6 +56,28 @@ def predict_item():
     return output_json
 
 
+@app.route("/predict-classe-genero", methods=['POST'])
+def predict_classe_genero():
+    req_data = request.get_json()
+    class_array = predict_class(loaded_model_classe_descricao, loaded_vocabulary_classe_descricao, req_data)
+    genero_list = []
+    req_array = req_data['data']
+    model_path = os.path.abspath('..\modelos_para_classes')
+    for i in range(len(req_array)):
+        class_id = str(class_array[i])
+        model_name = model_path+"\model"+class_id+".pkl"
+
+        model_vocab = model_path+"\model"+class_id+"_vocabulary.pkl"
+        
+        with open(model_name, 'rb') as f:
+            loaded_temp_model = joblib.load(f)
+    
+        with open(model_vocab, 'rb') as f1:
+            loaded_temp_vocab = joblib.load(f1)        
+        
+        print(predict_genero(loaded_temp_model, loaded_temp_vocab, req_array[i]['descricao']))
+        
+    return jsonify("testando")
 
 ##CRIA UM JSON PARA A SAÍDA
 def json_concatenation(input_json, json_key, predictions_list, prob_list, configuracao):
@@ -107,6 +113,7 @@ def json_concatenation(input_json, json_key, predictions_list, prob_list, config
         output_json = {"data" : output_dict}
         #output_json = jsonify(output_dict)
         return jsonify(output_json) 
+  
     
 def format_json_probs(input_json, json_key, predictions_list, pred_prob_list):
     teste_predict =input_json[json_key]
@@ -124,12 +131,14 @@ def format_json_probs(input_json, json_key, predictions_list, pred_prob_list):
         
     output_json = {"data" : output_dict}
     return jsonify(output_dict)   
+   
         
 def get_greatest_probabilities(pred_prob_list):
     max_probabilities = []
     for i in pred_prob_list:
        max_probabilities.append(max(i))
     return max_probabilities
+    
     
 def get_top_N_greatest_probabilities(list, N):
     list_copy = list
@@ -181,6 +190,61 @@ def config():
             linha[1]=''
         parametros[linha[0]] = linha[1]
     return parametros
+
+def predict_class(model, vocab, req_data):
+    vectorizer_train = CountVectorizer(vocabulary=vocab)
+    teste_predict = []
+    req_array = req_data['data']
+    for i in range(len(req_array)):
+        desc = req_array[i]['descricao']
+        teste_predict.append(desc)
+    
+    teste_predict_vect = vectorizer_train.transform(teste_predict) 
+    class_predictions = model.predict(teste_predict_vect)
+    
+    print(class_predictions)
+    return class_predictions
+
+def predict_genero(model, vocab, data):
+    vectorizer_train = CountVectorizer(vocabulary=vocab)
+    
+    data_v =[]
+    data_v.append(data) 
+    
+    teste_predict_vect = vectorizer_train.transform(data_v) 
+    genero_predictions = model.predict(teste_predict_vect)
+    
+    #print(genero_predictions)
+    return genero_predictions
+
+def initialize_models():
+    
+    ##
+    filename = 'Classificador-v2\model_v2.pkl'
+    #filename2 = '..\modelos_para_classes\model_Classe_Descricao.pkl'
+    filename2 = os.path.abspath('..\modelos_para_classes\model_Classe_Descricao.pkl')
+    ##
+    with open(filename ,'rb') as f:
+        loaded_model = joblib.load(f)
+        
+    with open(filename2 ,'rb') as f2:
+        loaded_model_classe_descricao = joblib.load(f2)
+
+    ##
+    vocab_filename = 'Classificador-v2\model_v2_vocabulary.pkl'
+    vocab_filename2 = '..\modelos_para_classes\model_Classe_Descricao_vocabulary.pkl'
+    ##
+    with open(vocab_filename, 'rb') as f3:
+        loaded_vocabulary = joblib.load(f3)
+    
+    with open(vocab_filename2, 'rb') as f4:
+        loaded_vocabulary_classe_descricao = joblib.load(f4)
+        
+    return loaded_model, loaded_model_classe_descricao, loaded_vocabulary, loaded_vocabulary_classe_descricao 
+
+
+##CARREGANDO MODELOS
+loaded_model, loaded_model_classe_descricao, loaded_vocabulary, loaded_vocabulary_classe_descricao = initialize_models()
 
 ##INICIANDO SERVIDOR
 app.run()
