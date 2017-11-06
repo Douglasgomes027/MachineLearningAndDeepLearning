@@ -78,11 +78,9 @@ def predict_classe_genero():
         
         pred_genero, prob_genero = predict_genero(loaded_temp_model, loaded_temp_vocab, req_array[i]['descricao'])
         genero_array.append(pred_genero[0])
-        prob_array.append(prob_genero[0][0])
+        prob_array.append(max(prob_genero[0]))
         
-    print(prob_array)
     output_json = json_concatenation(req_data,'data', genero_array, prob_array, config()) 
-    print(output_json)
     return output_json
 
 ##CRIA UM JSON PARA A SAÍDA
