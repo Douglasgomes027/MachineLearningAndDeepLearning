@@ -1,2 +1,2 @@
 ativado = True
-porcentagem = 0.5
+porcentagem = 0

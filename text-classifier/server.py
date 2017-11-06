@@ -60,7 +60,8 @@ def predict_item():
 def predict_classe_genero():
     req_data = request.get_json()
     class_array = predict_class(loaded_model_classe_descricao, loaded_vocabulary_classe_descricao, req_data)
-    genero_list = []
+    genero_array = []
+    prob_array  = []
     req_array = req_data['data']
     model_path = os.path.abspath('..\modelos_para_classes')
     for i in range(len(req_array)):
@@ -75,13 +76,17 @@ def predict_classe_genero():
         with open(model_vocab, 'rb') as f1:
             loaded_temp_vocab = joblib.load(f1)        
         
-        print(predict_genero(loaded_temp_model, loaded_temp_vocab, req_array[i]['descricao']))
+        pred_genero, prob_genero = predict_genero(loaded_temp_model, loaded_temp_vocab, req_array[i]['descricao'])
+        genero_array.append(pred_genero[0])
+        prob_array.append(prob_genero[0][0])
         
-    return jsonify("testando")
+    print(prob_array)
+    output_json = json_concatenation(req_data,'data', genero_array, prob_array, config()) 
+    print(output_json)
+    return output_json
 
 ##CRIA UM JSON PARA A SAÍDA
 def json_concatenation(input_json, json_key, predictions_list, prob_list, configuracao):
-    print (bool(configuracao['ativado']))
     teste_predict = input_json[json_key]
     output_dict= []
     if (bool(configuracao['ativado'])):
@@ -95,9 +100,7 @@ def json_concatenation(input_json, json_key, predictions_list, prob_list, config
                 }
                 output_dict.append(data)
             
-        #output_json = json.dumps(output_dict)
         output_json = {"data" : output_dict}
-        #output_json = jsonify(output_dict)
         return jsonify(output_json)
     else:
         for i in range(len(predictions_list)):
@@ -214,8 +217,9 @@ def predict_genero(model, vocab, data):
     teste_predict_vect = vectorizer_train.transform(data_v) 
     genero_predictions = model.predict(teste_predict_vect)
     
+    prob_list = model.predict_proba(teste_predict_vect).tolist()
     #print(genero_predictions)
-    return genero_predictions
+    return genero_predictions, prob_list
 
 def initialize_models():
     
@@ -248,4 +252,3 @@ loaded_model, loaded_model_classe_descricao, loaded_vocabulary, loaded_vocabular
 
 ##INICIANDO SERVIDOR
 app.run()
-
