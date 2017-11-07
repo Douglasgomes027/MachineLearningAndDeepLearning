@@ -2,10 +2,12 @@ from flask import Flask, jsonify, request, url_for
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.externals import joblib
+from flask_cors import CORS
 import os, json
 
 ##
 app = Flask(__name__)
+CORS(app)
 
 @app.route("/predictions", methods=['POST'])
 def predictions():
